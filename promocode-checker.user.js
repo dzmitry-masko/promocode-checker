@@ -6,8 +6,8 @@
 // @author      Человек
 // @match       https://www.21vek.by/*
 // @grant       none
-// @updateURL   https://raw.githubusercontent.com/username/repo/main/promocode-checker.user.js
-// @downloadURL https://raw.githubusercontent.com/username/repo/main/promocode-checker.user.js
+// @updateURL   https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/promocode-checker.user.js
+// @downloadURL https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/repo/main/promocode-checker.user.js
 // ==/UserScript==
 
 (function() {

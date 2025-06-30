@@ -5,7 +5,7 @@
 // @description Проверяет промокоды и показывает скидки по каждому промокоду на каждый товар в табличном виде (без тега table). Улучшена стабильность.
 // @author      Человек
 // @match       https://www.21vek.by/*
-// @grant       none
+// @grant       Dzmitry Masko
 // @updateURL   https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/promocode-checker.user.js
 // @downloadURL https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/repo/main/promocode-checker.user.js
 // ==/UserScript==

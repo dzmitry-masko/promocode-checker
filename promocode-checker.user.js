@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name        Promocode Checker - Item Discounts (Div Table, Stable)
 // @namespace   http://tampermonkey.net/
-// @version     2.0
+// @version     2.1
 // @description Проверяет промокоды и показывает скидки по каждому промокоду на каждый товар в табличном виде.
 // @author      Dzmitry Masko
 // @match       https://www.21vek.by/order/*
@@ -75,7 +75,7 @@
         const output = document.createElement('div');
         output.id = 'promocodeCheckerOutput'; // Добавляем ID для выходного блока
         output.style.whiteSpace = 'pre-wrap';
-        output.style.maxHeight = '520px';
+        output.style.maxHeight = '400px';
         output.style.overflowY = 'auto';
         output.style.border = '1px solid #ccc';
         output.style.padding = '8px';
@@ -85,6 +85,61 @@
         headerDiv.appendChild(toggleButton);
         container.appendChild(headerDiv);
         container.appendChild(output);
+
+        // --- Start of Banner Addition with Image Rotation ---
+        const competitorBanner = document.createElement('div');
+        competitorBanner.id = 'competitorBanner';
+        competitorBanner.style.backgroundColor = '#f0f8ff'; // Light blue background
+        competitorBanner.style.color = '#333';
+        competitorBanner.style.padding = '10px';
+        competitorBanner.style.textAlign = 'center';
+        competitorBanner.style.marginTop = '10px';
+        competitorBanner.style.border = '1px solid #cceeff';
+        competitorBanner.style.borderRadius = '5px';
+        competitorBanner.style.fontSize = '13px';
+        competitorBanner.style.display = 'none'; // Hidden by default
+
+        const bannerImage = document.createElement('img');
+        bannerImage.id = 'rotatingBannerImage'; // Added ID for easier access
+        bannerImage.src = ''; // Will be set by JavaScript
+        bannerImage.alt = 'Сравнение цен';
+        bannerImage.style.maxWidth = '728px'; // Ensures image fits within the banner
+        bannerImage.style.maxHeight = '90px'; // Ensures image fits within the banner
+        bannerImage.style.marginBottom = '5px';
+        bannerImage.style.borderRadius = '5px';
+        competitorBanner.appendChild(bannerImage);
+
+        const bannerText = document.createElement('p');
+        bannerText.innerHTML = 'Пока идёт проверка промокодов, можете <a href="https://vert.si/DxHMv" target="_blank" style="color: #007bff; text-decoration: underline;">сравнить цены у конкурентов</a>!';
+        competitorBanner.appendChild(bannerText);
+
+        container.appendChild(competitorBanner);
+
+        // Array of image URLs for the banner
+        const imageUrls = [
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/1.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/2.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/3.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/4.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/5.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/6.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/7.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/8.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/9.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/10.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/11.png',
+            'https://raw.githubusercontent.com/dzmitry-masko/promocode-checker/main/images/onliner/12.png',
+        ];
+        let currentImageIndex = 0;
+
+        function updateBannerImage() {
+            bannerImage.src = imageUrls[currentImageIndex];
+            currentImageIndex = (currentImageIndex + 1) % imageUrls.length; // Cycle through images
+        }
+
+        let imageRotationInterval; // Variable to store the interval ID
+
+        // --- End of Banner Addition with Image Rotation ---
 
         overlay = document.createElement('div');
         overlay.id = 'promocodeCheckerOverlay';
@@ -144,7 +199,7 @@
             "СУББОТНИК", "СУПЕРТВ", "ТАБМЕТ", "ТАРИФ", "ТАРЕЛКА", "ТЕСЛА", "ТЕХНИКА", "ТОНИК",
             "ТРЕНД", "ТРИ", "ТУРНИК", "УБОРКА", "УБОРНАЯ", "УДОБСТВО", "УТЮГ", "ФАЗЕНДА",
             "ФАСАД", "ФОН", "ФОРТУНА", "ФОТОН", "ХВОСТИК", "ХИТ", "ХОББИ", "ХОРОШО", "ЧАЙНИК",
-            "ЧЕСНОК", "ЧТИВО", "ШАНС", "ШАР", "ШКОЛА", "ЭЛЕКТРОНИКА", "ЮЛА"
+            "ЧЕСНОК", "ЧТИВО", "ШАНС", "ШАР", "ШКОЛА", "ЭЛЕКТРОНИКА", "ЮЛА", "ЛЕТО"
         ]);
 
         // Случайный порядок промокодов
@@ -160,7 +215,7 @@
                 method: "GET",
                 headers: {
                     "Accept": "application/json",
-                    "Content-Type": "application/json" // Удаляем, так как это GET запрос и может вызывать 415
+                    "Content-Type": "application/json"
                 },
                 credentials: "include"
             });
@@ -179,6 +234,15 @@
             btn.disabled = true;
             btn.style.display = 'none'; // Hide the button after click
             toggleButton.style.display = 'block'; // Show the toggle button after click
+
+            // Show the banner and start image rotation
+            competitorBanner.style.display = 'block';
+            updateBannerImage(); // Set the initial image
+            if (imageRotationInterval) { // Clear any existing interval to prevent multiple intervals
+                clearInterval(imageRotationInterval);
+            }
+            imageRotationInterval = setInterval(updateBannerImage, 30000); // Change image every 30 seconds
+
             output.innerHTML = 'Начинаем проверку промокодов...\n\n';
 
             const resultsTableData = {};
@@ -193,6 +257,8 @@
                 btn.disabled = false;
                 btn.style.display = 'block'; // Show button if there's an error
                 toggleButton.style.display = 'none'; // Hide toggle button if there's an error
+                overlay.style.display = 'none';
+                // Do NOT hide competitorBanner here, as per requirement
                 return;
             }
 
@@ -213,6 +279,8 @@
                 btn.disabled = false;
                 btn.style.display = 'block'; // Show button if no items
                 toggleButton.style.display = 'none'; // Hide toggle button if no items
+                overlay.style.display = 'none';
+                // Do NOT hide competitorBanner here, as per requirement
                 return;
             }
 
@@ -277,7 +345,7 @@
                                     if (Object.keys(promoItemDiscounts).length > 0) {
                                         output.innerHTML += `&nbsp;&nbsp;&nbsp;Скидки на товары:<br>`;
                                         for (const itemName in promoItemDiscounts) {
-                                            output.innerHTML += `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ${itemName}: ${promoItemDiscounts[itemName]} BYN<br>`;
+                                            output.innerHTML += `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- ${itemName}: ${promoItemDiscounts[itemName]} BYL<br>`;
                                         }
                                     }
                                     output.innerHTML += `<br>`;
@@ -312,6 +380,7 @@
             }
 
             output.innerHTML += `<hr><h3>Проверка завершена.</h3>`;
+            // Do NOT hide competitorBanner here, as per requirement
 
             const validPromocodesForTable = Object.keys(resultsTableData);
 
@@ -385,7 +454,6 @@
                     promoCodeCell.style.textAlign = 'center';
                     promoCodeCell.style.wordBreak = 'break-word';
 
-                    // --- START OF MODIFICATION ---
                     // Add promocode text
                     promoCodeCell.innerHTML = `<b>${code}</b>`;
 
@@ -413,8 +481,6 @@
                         }
                     });
                     promoCodeCell.appendChild(copyIcon);
-                    // --- END OF MODIFICATION ---
-
                     dataRow.appendChild(promoCodeCell);
 
                     sortedItemNames.forEach(itemName => {
@@ -508,8 +574,6 @@
             }
 
             overlay.style.display = 'none';
-
-            // btn.disabled = false; // The button remains hidden
         }
 
         btn.addEventListener('click', checkPromocodes);
